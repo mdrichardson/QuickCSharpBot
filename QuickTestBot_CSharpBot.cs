@@ -32,9 +32,9 @@ namespace QuickTestBot_CSharp
 
             if (activity.Type == ActivityTypes.Message)
             {
-                // Ensure that message is a postBack (like a submission from Adaptive Cards
+                // Ensure that message is a postBack (like a submission from Adaptive Cards)
                 var channelData = JObject.Parse(dc.Context.Activity.ChannelData.ToString());
-                if (channelData.ContainsKey("postback"))
+                if (channelData.ContainsKey("postBack"))
                 {
                     var postbackActivity = dc.Context.Activity;
                     // Convert the user's Adaptive Card input into the input of a Text Prompt
