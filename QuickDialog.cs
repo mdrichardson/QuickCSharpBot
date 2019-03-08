@@ -25,6 +25,7 @@ namespace QuickTestBot_CSharp
 
         private static async Task<DialogTurnResult> FirstStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken = default(CancellationToken))
         {
+            await stepContext.Context.SendActivityAsync("Beginning QuickDialog...");
             return await stepContext.NextAsync();
         }
 

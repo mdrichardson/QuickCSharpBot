@@ -19,6 +19,7 @@ namespace QuickTestBot_CSharp
         public static async Task OnWelcomeAsync(DialogContext dc, CancellationToken cancellationToken)
         {
             await dc.Context.SendActivityAsync("Executing welcome test...");
+            await dc.BeginDialogAsync(nameof(QuickDialog));
         }
 
         public static async Task OnMessageAsync(DialogContext dc, CancellationToken cancellationToken)
