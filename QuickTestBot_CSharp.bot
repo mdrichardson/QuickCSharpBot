@@ -15,10 +15,10 @@
             "name": "production",
             "endpoint": "https://vmicricquickcsharp.azurewebsites.net/api/messages",
             "appId": "d8a15c23-433f-41e5-8088-6f06ec0ea187",
-            "appPassword": "GtT7uEY8vggxUPotes0NpQ==!qsAPKfLL+jrD9QfdF7IEDtaQnGLEn6PAAi63uhbyTMY=",
+            "appPassword": "rlvmaUGSJB02[-cjUQ565{:",
             "id": "2"
         }
     ],
-    "padlock": "VeCpCPYJuTyT7G8IbOowMA==!5mUA0Ynlos8HtyL7DeDQh+d7c9/dt0g0KuAbRjY9PIZqKqIyg7UtKtPPRBYjcA0v",
+    "padlock": "",
     "version": "2.0"
 }
