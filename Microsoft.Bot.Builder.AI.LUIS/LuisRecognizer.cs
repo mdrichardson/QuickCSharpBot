@@ -13,7 +13,6 @@ using Microsoft.Bot.Builder.TraceExtensions;
 using Microsoft.Bot.Configuration;
 using Microsoft.Bot.Schema;
 using Newtonsoft.Json.Linq;
-using QuickTestBot_CSharp.Microsoft.Bot.Builder.AI.LUIS;
 
 namespace Microsoft.Bot.Builder.AI.Luis
 {
@@ -34,7 +33,7 @@ namespace Microsoft.Bot.Builder.AI.Luis
         public const string LuisTraceLabel = "Luis Trace";
         private const string _metadataKey = "$instance";
         private readonly ILUISRuntimeClient _runtime;
-        private readonly LuisApplication _application;
+        private readonly LuisApplicationWithRotatingKeys _application;
         private readonly LuisPredictionOptions _options;
         private readonly bool _includeApiResults;
 
@@ -45,13 +44,13 @@ namespace Microsoft.Bot.Builder.AI.Luis
         /// <param name="predictionOptions">(Optional) The LUIS prediction options to use.</param>
         /// <param name="includeApiResults">(Optional) TRUE to include raw LUIS API response.</param>
         /// <param name="clientHandler">(Optional) Custom handler for LUIS API calls to allow mocking.</param>
-        public LuisRecognizer(LuisApplication application, LuisPredictionOptions predictionOptions = null, bool includeApiResults = false, HttpClientHandler clientHandler = null)
+        public LuisRecognizer(LuisApplicationWithRotatingKeys application, LuisPredictionOptions predictionOptions = null, bool includeApiResults = false, HttpClientHandler clientHandler = null)
         {
             _application = application ?? throw new ArgumentNullException(nameof(application));
             _options = predictionOptions ?? new LuisPredictionOptions();
             _includeApiResults = includeApiResults;
 
-            var credentials = new ApiKeyServiceClientCredentials(application.EndpointKey);
+            var credentials = new ApiKeyServiceClientCredentials(application.EndpointKeysToRotate[0]);
             var delegatingHandler = new LuisDelegatingHandler();
 
             // LUISRuntimeClient requires that we explicitly bind to the appropriate constructor.
@@ -67,12 +66,24 @@ namespace Microsoft.Bot.Builder.AI.Luis
         /// <summary>
         /// Initializes a new instance of the <see cref="LuisRecognizer"/> class.
         /// </summary>
+        /// <param name="application">The LUIS application to use to recognize text.</param>
+        /// <param name="predictionOptions">(Optional) The LUIS prediction options to use.</param>
+        /// <param name="includeApiResults">(Optional) TRUE to include raw LUIS API response.</param>
+        /// <param name="clientHandler">(Optional) Custom handler for LUIS API calls to allow mocking.</param>
+        public LuisRecognizer(LuisApplication application, LuisPredictionOptions predictionOptions = null, bool includeApiResults = false, HttpClientHandler clientHandler = null)
+            : this(ConvertApplication(application), predictionOptions, includeApiResults, clientHandler)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LuisRecognizer"/> class.
+        /// </summary>
         /// <param name="service">The LUIS service from configuration.</param>
         /// <param name="predictionOptions">(Optional) The LUIS prediction options to use.</param>
         /// <param name="includeApiResults">(Optional) TRUE to include raw LUIS API response.</param>
         /// <param name="clientHandler">(Optional) Custom handler for LUIS API calls to allow mocking.</param>
         public LuisRecognizer(LuisService service, LuisPredictionOptions predictionOptions = null, bool includeApiResults = false, HttpClientHandler clientHandler = null)
-            : this(new LuisApplication(service), predictionOptions, includeApiResults, clientHandler)
+            : this(ConvertApplication(new LuisApplication(service)), predictionOptions, includeApiResults, clientHandler)
         {
         }
 
@@ -119,6 +130,16 @@ namespace Microsoft.Bot.Builder.AI.Luis
             var result = new T();
             result.Convert(await RecognizeInternalAsync(turnContext, cancellationToken).ConfigureAwait(false));
             return result;
+        }
+
+        private static LuisApplicationWithRotatingKeys ConvertApplication(LuisApplication application)
+        {
+            return new LuisApplicationWithRotatingKeys()
+            {
+                ApplicationId = application.ApplicationId,
+                Endpoint = application.Endpoint,
+                EndpointKeysToRotate = new List<string> { application.EndpointKey },
+            };
         }
 
         private static string NormalizedIntent(string intent) => intent.Replace('.', '_').Replace(' ', '_');

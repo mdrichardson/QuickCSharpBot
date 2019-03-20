@@ -6,7 +6,7 @@ using System.Linq;
 using System.Web;
 using Microsoft.Bot.Configuration;
 
-namespace QuickTestBot_CSharp.Microsoft.Bot.Builder.AI.LUIS
+namespace Microsoft.Bot.Builder.AI.Luis
 {
     /// <summary>
     /// Data describing a LUIS application.
