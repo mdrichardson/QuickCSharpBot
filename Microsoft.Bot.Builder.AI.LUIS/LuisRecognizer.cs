@@ -32,10 +32,12 @@ namespace Microsoft.Bot.Builder.AI.Luis
         /// </summary>
         public const string LuisTraceLabel = "Luis Trace";
         private const string _metadataKey = "$instance";
-        private readonly ILUISRuntimeClient _runtime;
-        private readonly LuisApplicationWithRotatingKeys _application;
+        //private readonly ILUISRuntimeClient _runtime;
         private readonly LuisPredictionOptions _options;
         private readonly bool _includeApiResults;
+        private readonly string _appId;
+        private List<ILUISRuntimeClient> _luisClients = new List<ILUISRuntimeClient>() { };
+        private int _luisClientIndex = 0;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LuisRecognizer"/> class.
@@ -46,21 +48,15 @@ namespace Microsoft.Bot.Builder.AI.Luis
         /// <param name="clientHandler">(Optional) Custom handler for LUIS API calls to allow mocking.</param>
         public LuisRecognizer(LuisApplicationWithRotatingKeys application, LuisPredictionOptions predictionOptions = null, bool includeApiResults = false, HttpClientHandler clientHandler = null)
         {
-            _application = application ?? throw new ArgumentNullException(nameof(application));
+            if (application == null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
             _options = predictionOptions ?? new LuisPredictionOptions();
             _includeApiResults = includeApiResults;
+            _appId = application.ApplicationId;
 
-            var credentials = new ApiKeyServiceClientCredentials(application.EndpointKeysToRotate[0]);
-            var delegatingHandler = new LuisDelegatingHandler();
-
-            // LUISRuntimeClient requires that we explicitly bind to the appropriate constructor.
-            _runtime = clientHandler == null
-                    ?
-                new LUISRuntimeClient(credentials, delegatingHandler)
-                    :
-                new LUISRuntimeClient(credentials, clientHandler, delegatingHandler);
-
-            _runtime.Endpoint = application.Endpoint;
+            CreateLuisClientsArray(application, clientHandler);
         }
 
         /// <summary>
@@ -140,6 +136,30 @@ namespace Microsoft.Bot.Builder.AI.Luis
                 Endpoint = application.Endpoint,
                 EndpointKeysToRotate = new List<string> { application.EndpointKey },
             };
+        }
+
+        private void CreateLuisClientsArray(LuisApplicationWithRotatingKeys application, HttpClientHandler clientHandler)
+        {
+            var delegatingHandler = new LuisDelegatingHandler();
+
+            foreach (string key in application.EndpointKeysToRotate)
+            {
+                // LUISRuntimeClient requires that we explicitly bind to the appropriate constructor.
+                var credentials = new ApiKeyServiceClientCredentials(key);
+
+                var runtime = clientHandler == null
+                    ?
+                    new LUISRuntimeClient(credentials, delegatingHandler)
+                    :
+                    new LUISRuntimeClient(credentials, clientHandler, delegatingHandler);
+
+                runtime.Endpoint = application.Endpoint;
+                _luisClients.Add(runtime);
+            }            
+        }
+        private void SetNextLuisClientIndex()
+        {
+            _luisClientIndex = _luisClientIndex + 1 < _luisClients.Count ? _luisClientIndex + 1 : 0;
         }
 
         private static string NormalizedIntent(string intent) => intent.Replace('.', '_').Replace(' ', '_');
@@ -440,8 +460,12 @@ namespace Microsoft.Bot.Builder.AI.Luis
                 throw new ArgumentNullException(nameof(utterance));
             }
 
-            var luisResult = await _runtime.Prediction.ResolveAsync(
-                _application.ApplicationId,
+            var currentClientIndex = _luisClientIndex;
+
+            SetNextLuisClientIndex();
+
+            var luisResult = await _luisClients[currentClientIndex].Prediction.ResolveAsync(
+                _appId,
                 utterance,
                 timezoneOffset: _options.TimezoneOffset,
                 verbose: _options.IncludeAllIntents,
@@ -470,7 +494,7 @@ namespace Microsoft.Bot.Builder.AI.Luis
                     recognizerResult,
                     luisModel = new
                     {
-                        ModelID = _application.ApplicationId,
+                        ModelID = _appId,
                     },
                     luisOptions = _options,
                     luisResult,
