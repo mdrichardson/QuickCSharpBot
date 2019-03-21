@@ -36,7 +36,7 @@ namespace Microsoft.Bot.Builder.AI.Luis
         private readonly LuisPredictionOptions _options;
         private readonly bool _includeApiResults;
         private readonly string _appId;
-        private List<ILUISRuntimeClient> _luisClients = new List<ILUISRuntimeClient>() { };
+        private ILUISRuntimeClient[] _luisClients = new ILUISRuntimeClient[] { };
         private int _luisClientIndex = 0;
 
         /// <summary>
@@ -134,7 +134,7 @@ namespace Microsoft.Bot.Builder.AI.Luis
             {
                 ApplicationId = application.ApplicationId,
                 Endpoint = application.Endpoint,
-                EndpointKeysToRotate = new List<string> { application.EndpointKey },
+                EndpointKeysToRotate = new string[] { application.EndpointKey },
             };
         }
 
@@ -142,24 +142,27 @@ namespace Microsoft.Bot.Builder.AI.Luis
         {
             var delegatingHandler = new LuisDelegatingHandler();
 
-            foreach (string key in application.EndpointKeysToRotate)
+            _luisClients = application.EndpointKeysToRotate.Select(key =>
             {
-                // LUISRuntimeClient requires that we explicitly bind to the appropriate constructor.
                 var credentials = new ApiKeyServiceClientCredentials(key);
 
                 var runtime = clientHandler == null
                     ?
                     new LUISRuntimeClient(credentials, delegatingHandler)
+                    {
+                        Endpoint = application.Endpoint,
+                    }
                     :
-                    new LUISRuntimeClient(credentials, clientHandler, delegatingHandler);
-
-                runtime.Endpoint = application.Endpoint;
-                _luisClients.Add(runtime);
-            }            
+                    new LUISRuntimeClient(credentials, clientHandler, delegatingHandler)
+                    {
+                        Endpoint = application.Endpoint,
+                    };
+                return runtime;
+            }).ToArray();    
         }
         private void SetNextLuisClientIndex()
         {
-            _luisClientIndex = _luisClientIndex + 1 < _luisClients.Count ? _luisClientIndex + 1 : 0;
+            _luisClientIndex = _luisClientIndex + 1 < _luisClients.Length ? _luisClientIndex + 1 : 0;
         }
 
         private static string NormalizedIntent(string intent) => intent.Replace('.', '_').Replace(' ', '_');

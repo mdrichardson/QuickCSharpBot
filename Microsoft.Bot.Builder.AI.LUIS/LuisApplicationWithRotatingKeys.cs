@@ -21,12 +21,12 @@ namespace Microsoft.Bot.Builder.AI.Luis
         /// <param name="applicationId">LUIS application ID.</param>
         /// <param name="endpointKey">LUIS subscription or endpoint key.</param>
         /// <param name="endpoint">LUIS endpoint to use like https://westus.api.cognitive.microsoft.com.</param>
-        public LuisApplicationWithRotatingKeys(string applicationId, List<string> endpointKeysToRotate, string endpoint)
+        public LuisApplicationWithRotatingKeys(string applicationId, string[] endpointKeysToRotate, string endpoint)
             : this((applicationId, endpointKeysToRotate, endpoint))
         {
         }
 
-        private LuisApplicationWithRotatingKeys(ValueTuple<string, List<string>, string> props)
+        private LuisApplicationWithRotatingKeys(ValueTuple<string, string[], string> props)
         {
             var (applicationId, endpointKeysToRotate, endpoint) = props;
 
@@ -64,6 +64,6 @@ namespace Microsoft.Bot.Builder.AI.Luis
         /// <value>
         /// LUIS subscription or endpoint key.
         /// </value>
-        public List<string> EndpointKeysToRotate { get; set; }
+        public string[] EndpointKeysToRotate { get; set; }
     }
 }
