@@ -9,7 +9,7 @@ namespace Microsoft.Bot.Builder.AI.Luis
     /// <summary>
     /// Data describing a LUIS application.
     /// </summary>
-    public class LuisApplicationWithRotatingKeys : LuisApplication
+    public class LuisApplicationWithRotatingKeys : LuisApplicationBase
     {
         public LuisApplicationWithRotatingKeys()
         {

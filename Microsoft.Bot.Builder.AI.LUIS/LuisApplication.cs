@@ -11,7 +11,7 @@ namespace Microsoft.Bot.Builder.AI.Luis
     /// <summary>
     /// Data describing a LUIS application.
     /// </summary>
-    public class LuisApplication
+    public class LuisApplication : LuisApplicationBase
     {
         public LuisApplication()
         {
@@ -76,28 +76,12 @@ namespace Microsoft.Bot.Builder.AI.Luis
         }
 
         /// <summary>
-        /// Gets or sets lUIS application ID.
-        /// </summary>
-        /// <value>
-        /// LUIS application ID.
-        /// </value>
-        public string ApplicationId { get; set; }
-
-        /// <summary>
         /// Gets or sets lUIS subscription or endpoint key.
         /// </summary>
         /// <value>
         /// LUIS subscription or endpoint key.
         /// </value>
         public string EndpointKey { get; set; }
-
-        /// <summary>
-        /// Gets or sets lUIS endpoint like https://westus.api.cognitive.microsoft.com.
-        /// </summary>
-        /// <value>
-        /// LUIS endpoint where application is hosted.
-        /// </value>
-        public string Endpoint { get; set; }
 
         private static (string applicationId, string endpointKey, string endpoint) Parse(string applicationEndpoint)
         {
