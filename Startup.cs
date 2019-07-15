@@ -35,15 +35,7 @@ namespace QuickTestBot
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
             // Create the credential provider to be used with the Bot Framework Adapter.
-            if (Configuration["UseCredentials"] == "true")
-            {
-                
-                services.AddSingleton<ICredentialProvider, ConfigurationCredentialProvider>();
-            }
-            else
-            {
-                services.AddSingleton(new SimpleCredentialProvider() { AppId = "", Password = "" });
-            }
+            services.AddSingleton<ICredentialProvider, ConfigurationCredentialProvider>();
 
             // Create the Bot Framework Adapter with error handling enabled.
             services.AddSingleton<IBotFrameworkHttpAdapter, AdapterWithErrorHandler>();
