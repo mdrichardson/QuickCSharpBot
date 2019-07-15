@@ -1,60 +1,90 @@
-﻿# QuickTestBot_CSharp
+# QuickTestBot_CSharp
 
-This bot is for quickly testing bot features in TypeScript.
-This bot has been created using [Microsoft Bot Framework][1].
+Bot Framework v4 core bot sample.
 
-# Prerequisites
-- [Visual Studio 2017 15.7][2] or newer installed.
-- [.Net Core 2.1][3] or higher installed.  
-- [Bot Framework Emulator 4.1][6] or newer installed
+This bot has been created using [Bot Framework](https://dev.botframework.com), it shows how to:
 
-# Running Locally
+- Use [LUIS](https://www.luis.ai) to implement core AI capabilities
+- Implement a multi-turn conversation using Dialogs
+- Handle user interruptions for such things as `Help` or `Cancel`
+- Prompt for and validate requests for information from the user
 
-## Visual Studio
-- Open QuickTestBot_CSharp.csproj in Visual Studio.
-- Run the project (press `F5` key).
+## Prerequisites
+
+This sample **requires** prerequisites in order to run.
+
+### Overview
+
+This bot uses [LUIS](https://www.luis.ai), an AI based cognitive service, to implement language understanding.
+
+### Install .NET Core CLI
+
+- [.NET Core SDK](https://dotnet.microsoft.com/download) version 2.1
+
+  ```bash
+  # determine dotnet version
+  dotnet --version
+  ```
+
+### Create a LUIS Application to enable language understanding
+
+LUIS language model setup, training, and application configuration steps can be found [here](https://docs.microsoft.com/en-us/azure/bot-service/bot-builder-howto-v4-luis?view=azure-bot-service-4.0&tabs=cs).
+
+If you wish to create a LUIS application via the CLI, these steps can be found in the [README-LUIS.md](README-LUIS.md).
+
+## To try this sample
+
+- Clone the repository
+
+    ```bash
+    git clone https://github.com/microsoft/botbuilder-samples.git
+    ```
+
+- In a terminal, navigate to `samples/csharp_dotnetcore/13.core-bot`
+- Run the bot from a terminal or from Visual Studio, choose option A or B.
+
+  A) From a terminal
+
+  ```bash
+  # run the bot
+  dotnet run
+  ```
+
+  B) Or from Visual Studio
+
+  - Launch Visual Studio
+  - File -> Open -> Project/Solution
+  - Navigate to `samples/csharp_dotnetcore/13.core-bot` folder
+  - Select `QuickTestBot_CSharp.csproj` file
+  - Press `F5` to run the project
 
 ## Testing the bot using Bot Framework Emulator
-[Microsoft Bot Framework Emulator][5] is a desktop application that allows bot 
-developers to test and debug their bots on localhost or running remotely through a tunnel.
-- Install the [Bot Framework emulator][6].
 
-## Connect to bot using Bot Framework Emulator **V4**
-- Launch the Bot Framework Emulator.
-- File -> Open bot and open [QuickTestBot_CSharp.bot](QuickTestBot_CSharp.bot).
+[Bot Framework Emulator](https://github.com/microsoft/botframework-emulator) is a desktop application that allows bot developers to test and debug their bots on localhost or running remotely through a tunnel.
 
-# Deploy the bot to Azure
-See [Deploy your C# bot to Azure][50] for instructions.
+- Install the Bot Framework Emulator version 4.3.0 or greater from [here](https://github.com/Microsoft/BotFramework-Emulator/releases)
 
-The deployment process assumes you have an account on Microsoft Azure and are able to log into the [Microsoft Azure Portal][60].
+### Connect to the bot using Bot Framework Emulator
 
-If you are new to Microsoft Azure, please refer to [Getting started with Azure][70] for guidance on how to get started on Azure.
+- Launch Bot Framework Emulator
+- File -> Open Bot
+- Enter a Bot URL of `http://localhost:3978/api/messages`
 
-# Further reading
-* [Bot Framework Documentation][80]
-* [Bot Basics][90]
-* [Azure Bot Service Introduction][100]
-* [Azure Bot Service Documentation][110]
-* [Azure CLI][120]
-* [msbot CLI][130]
-* [Azure Portal][140]
-* [Language Understanding using LUIS][150]
+## Deploy the bot to Azure
 
-[1]: https://dev.botframework.com
-[2]: https://docs.microsoft.com/en-us/visualstudio/releasenotes/vs2017-relnotes
-[3]: https://dotnet.microsoft.com/download/dotnet-core/2.1
-[4]: https://docs.microsoft.com/en-us/azure/bot-service/bot-service-overview-introduction?view=azure-bot-service-4.0
-[5]: https://github.com/microsoft/botframework-emulator
-[6]: https://aka.ms/botframeworkemulator
+To learn more about deploying a bot to Azure, see [Deploy your bot to Azure](https://aka.ms/azuredeployment) for a complete list of deployment instructions.
 
-[50]: https://docs.microsoft.com/en-us/azure/bot-service/bot-builder-howto-deploy-azure?view=azure-bot-service-4.0
-[60]: https://portal.azure.com
-[70]: https://azure.microsoft.com/get-started/
-[80]: https://docs.botframework.com
-[90]: https://docs.microsoft.com/en-us/azure/bot-service/bot-builder-basics?view=azure-bot-service-4.0
-[100]: https://docs.microsoft.com/en-us/azure/bot-service/bot-service-overview-introduction?view=azure-bot-service-4.0
-[110]: https://docs.microsoft.com/en-us/azure/bot-service/?view=azure-bot-service-4.0
-[120]: https://docs.microsoft.com/en-us/cli/azure/?view=azure-cli-latest
-[130]: https://github.com/Microsoft/botbuilder-tools/tree/master/packages/MSBot
-[140]: https://portal.azure.com
-[150]: https://www.luis.ai
+## Further reading
+
+- [Bot Framework Documentation](https://docs.botframework.com)
+- [Bot Basics](https://docs.microsoft.com/azure/bot-service/bot-builder-basics?view=azure-bot-service-4.0)
+- [Dialogs](https://docs.microsoft.com/en-us/azure/bot-service/bot-builder-concept-dialog?view=azure-bot-service-4.0)
+- [Gathering Input Using Prompts](https://docs.microsoft.com/en-us/azure/bot-service/bot-builder-prompts?view=azure-bot-service-4.0&tabs=csharp)
+- [Activity processing](https://docs.microsoft.com/en-us/azure/bot-service/bot-builder-concept-activity-processing?view=azure-bot-service-4.0)
+- [Azure Bot Service Introduction](https://docs.microsoft.com/azure/bot-service/bot-service-overview-introduction?view=azure-bot-service-4.0)
+- [Azure Bot Service Documentation](https://docs.microsoft.com/azure/bot-service/?view=azure-bot-service-4.0)
+- [.NET Core CLI tools](https://docs.microsoft.com/en-us/dotnet/core/tools/?tabs=netcore2x)
+- [Azure CLI](https://docs.microsoft.com/cli/azure/?view=azure-cli-latest)
+- [Azure Portal](https://portal.azure.com)
+- [Language Understanding using LUIS](https://docs.microsoft.com/en-us/azure/cognitive-services/luis/)
+- [Channels and Bot Connector Service](https://docs.microsoft.com/en-us/azure/bot-service/bot-concepts?view=azure-bot-service-4.0)

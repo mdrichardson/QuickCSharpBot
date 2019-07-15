@@ -1,99 +1,86 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using System;
-using System.Diagnostics;
-using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
-using Microsoft.Bot.Configuration;
 using Microsoft.Bot.Connector.Authentication;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Bot.Builder.BotFramework;
+using QuickTestBot.Dialogs;
+using Microsoft.Extensions.Configuration;
 
-namespace QuickTestBot_CSharp
+namespace QuickTestBot
 {
-    /// <summary>
-    /// The Startup class configures services and the request pipeline.
-    /// </summary>
     public class Startup
     {
-        private bool _isProduction = false;
+        public IConfiguration Configuration { get; }
         public Startup(IHostingEnvironment env)
         {
-            _isProduction = env.IsProduction();
 
             var builder = new ConfigurationBuilder()
-                .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
-                .AddEnvironmentVariables();
+            .SetBasePath(env.ContentRootPath)
+            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+            .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
+            .AddEnvironmentVariables();
 
             Configuration = builder.Build();
         }
 
-        /// <summary>
-        /// Gets the configuration that represents a set of key/value application configuration properties.
-        /// </summary>
-        /// <value>
-        /// The <see cref="IConfiguration"/> that represents a set of key/value application configuration properties.
-        /// </value>
-        public IConfiguration Configuration { get; }
-
-        /// <summary>
-        /// This method gets called by the runtime. Use this method to add services to the container.
-        /// </summary>
-        /// <param name="services">The <see cref="IServiceCollection"/> specifies the contract for a collection of service descriptors.</param>
-        /// <seealso cref="IStatePropertyAccessor{T}"/>
-        /// <seealso cref="https://docs.microsoft.com/en-us/aspnet/web-api/overview/advanced/dependency-injection"/>
-        /// <seealso cref="https://docs.microsoft.com/en-us/azure/bot-service/bot-service-manage-channels?view=azure-bot-service-4.0"/>
+        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            IStorage dataStore = new MemoryStorage();
+            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
-            var conversationState = new ConversationState(dataStore);
+            // Create the credential provider to be used with the Bot Framework Adapter.
+            if (Configuration["UseCredentials"] == "true")
+            {
+                
+                services.AddSingleton<ICredentialProvider, ConfigurationCredentialProvider>();
+            }
+            else
+            {
+                services.AddSingleton(new SimpleCredentialProvider() { AppId = "", Password = "" });
+            }
 
-            services.AddSingleton(conversationState);
+            // Create the Bot Framework Adapter with error handling enabled.
+            services.AddSingleton<IBotFrameworkHttpAdapter, AdapterWithErrorHandler>();
 
-            services.AddBot<QuickTestBot_CSharpBot>(options =>
-           {
-               var secretKey = Configuration.GetSection("botFileSecret")?.Value;
+            // Create the storage we'll be using for User and Conversation state. (Memory is great for testing purposes.)
+            services.AddSingleton<IStorage, MemoryStorage>();
 
-                // Loads .bot configuration file and adds a singleton that your Bot can access through dependency injection.
-                var botConfig = BotConfiguration.Load(@".\QuickTestBot_CSharp.bot", secretKey);
-               services.AddSingleton(sp => botConfig);
+            // Create the User state. (Used in this bot's Dialog implementation.)
+            services.AddSingleton<UserState>();
 
-               // Retrieve current endpoint.
-               var environment = _isProduction ? "production" : "development";
-               var service = botConfig.Services.FirstOrDefault(s => s.Type == "endpoint" && s.Name == environment);
-               if (service == null && _isProduction)
-               {
-                   // Attempt to load development environment
-                   service = botConfig.Services.Where(s => s.Type == "endpoint" && s.Name == "development").FirstOrDefault();
-               }
+            // Create the Conversation state. (Used by the Dialog system itself.)
+            services.AddSingleton<ConversationState>();
 
-               if (!(service is EndpointService endpointService))
-               {
-                   throw new InvalidOperationException($"The .bot file does not contain an endpoint with name '{environment}'.");
-               }
+            // The Dialog that will be run by the bot.
+            services.AddSingleton<QuickDialog>();
 
-               options.CredentialProvider = new SimpleCredentialProvider(endpointService.AppId, endpointService.AppPassword);
-
-                // Catches any errors that occur during a conversation turn and logs them.
-                options.OnTurnError = async (context, exception) =>
-               {
-                   await context.SendActivityAsync("Sorry, it looks like something went wrong.");
-               };
-           });
+            // Create the bot as a transient. In this case the ASP Controller is expecting an IBot.
+            services.AddTransient<IBot, ActivityTesterBot<QuickDialog>>();
         }
 
+        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            app.UseDefaultFiles()
-                .UseStaticFiles()
-                .UseBotFramework();
+            if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+            }
+            else
+            {
+                app.UseHsts();
+            }
+
+            app.UseDefaultFiles();
+            app.UseStaticFiles();
+
+            //app.UseHttpsRedirection();
+            app.UseMvc();
         }
     }
 }
