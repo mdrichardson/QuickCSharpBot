@@ -50,7 +50,7 @@ namespace QuickTestBot.Dialogs
             await stepContext.Context.SendActivityAsync("Beginning QuickDialog...");
 
             // Create the Adaptive Card
-            var cardPath = Path.Combine("../Cards", "AdaptiveCard.json");
+            var cardPath = Path.Combine("./Cards", "adaptiveCard.json");
             var cardJson = File.ReadAllText(cardPath);
             var cardAttachment = new Attachment()
             {
